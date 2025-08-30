@@ -1,99 +1,82 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Country Info App
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+This is a NestJS-based back-end app to provide information about countries and add holidays to the user’s calendar. It has three major endpoints:
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+1. `GET /countries` - get info about all the available countries;
+2. `GET /countries/:countryCode` - get info about a particular country including info about bordering countries, population historical data and flag URL;
+3. `POST /users/:userId/calendar/holidays` - add events in a particular country in a particular year. It requires a body with the example below:
 
-## Description
+```json
+{
+  "countryCode": "US",
+  "year": 2025,
+  "holidays": ["New Year's Day", "Independence Day"]
+}
+```
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+The `holidays` filter is optional.
 
-## Project setup
+To install and run the app, you need Node.js to be installed in your environment. Also, an existing PostgreSQL db needs to be available for connection.
 
-```bash
+1. Clone this repo (The '$' sign here just shows that the command is run in a terminal, and the user is not required to have root privileges, so do not copy it):
+
+```sh
+$ git clone https://github.com/NikitaSutulov/country-info-app.git
+```
+
+2. Go to the project root folder.
+3. Install the dependencies:
+
+```sh
 $ npm install
 ```
 
-## Compile and run the project
+4. Write your config into .env file. Its structure is the following:
 
-```bash
-# development
-$ npm run start
+```
+NAGER_API_BASE_URL - Nager API base URL
+COUNTRIES_NOW_API_BASE_URL - CountriesNow API base URL (including /countries)
 
-# watch mode
+DB_HOST - your host name
+DB_PORT - your port number
+DB_USERNAME - your db username
+DB_PASSWORD - your db password
+DB_NAME -your db name
+
+JWT_SECRET - your JWT secret. Make sure it is secure enough
+```
+
+For these rows, write their values after '=' sign. For example:
+
+```
+DB_HOST=localhost
+```
+
+5. To launch the app, run this command:
+
+```sh
 $ npm run start:dev
-
-# production mode
-$ npm run start:prod
 ```
 
-## Run tests
+The app can be tested manually.
 
-```bash
-# unit tests
-$ npm run test
+To perform the testing of getting all available countries info, simply use the first of the major endpoints described at the beginning of this document.
 
-# e2e tests
-$ npm run test:e2e
+To perform the testing of getting info about a particular country, simply use the second of the major endpoints described at the beginning of this document, replacing `:countryCode` with the two-letter code of the country you want to get info about.
 
-# test coverage
-$ npm run test:cov
+To perform the testing of adding holidays to the user's calendar, you can create a user with a signup endpoint: `POST /users/signup`, providing the following JSON body:
+
+```json
+{
+  "username": "your-username",
+  "password": "your-password"
+}
 ```
 
-## Deployment
+Then, login using `POST /users/login` with the same body. As the result, you get an object with the ID of your user and the access token to use in the future requests. It must be inserted into `Authorization` header, and a word `Bearer ` with a space after it must precede the token. For example:
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g mau
-$ mau deploy
+```http
+Authorization: Bearer token.is.here
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+This gives you the authorized access to the calendar of your user. Here, you can add holidays using the third major endpoint described at the beginning of this document, replacing `:userId` with the id of your user. To check the presence of the holidays, use the following endpoint: `GET /users/:userId/calendar/holidays`, replacing `:userId` with the id of your user. You will get the list of events saved in the user's calendar.
