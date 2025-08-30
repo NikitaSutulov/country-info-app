@@ -34,7 +34,7 @@ export class UserController {
     @Body() addHolidaysDto: AddHolidaysDto,
     @Req() req: any,
   ) {
-    if (req.user.id !== userId) {
+    if (req.user.sub !== userId) {
       throw new ForbiddenException(
         'Forbidden to access a calendar of another user',
       );

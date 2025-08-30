@@ -18,7 +18,7 @@ The `holidays` filter is optional.
 
 To install and run the app, you need Node.js to be installed in your environment. Also, an existing PostgreSQL db needs to be available for connection.
 
-1. Clone this repo (The '$' sign here just shows that the command is run in a terminal, and the user is not required to have root privileges, so do not copy it):
+1. Clone this repository (The '$' sign here just shows that the command is run in a terminal, and the user is not required to have root privileges, so do not copy it):
 
 ```sh
 $ git clone https://github.com/NikitaSutulov/country-info-app.git
@@ -57,6 +57,14 @@ DB_HOST=localhost
 ```sh
 $ npm run start:dev
 ```
+
+Alternatively, if you have Docker and Docker Compose installed on your machine, after clonning the repository, you can skip the dependencies installation step, and instead, make Docker compose set up the nestjs app with the PostgreSQL DB in containers:
+
+```sh
+$ docker compose up -d
+```
+
+In both cases, the app is available on http://localhost:3000
 
 The app can be tested manually.
 
