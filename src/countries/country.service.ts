@@ -1,15 +1,17 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { CountryCodeDto } from './dto/country-code.dto';
 import { HttpService } from '@nestjs/axios';
-import { CountryBordersInfoDto } from './dto/country-borders-info.dto';
-import { PopulationCountDto } from './dto/population-count.dto';
-import { PopulationInfoDto } from './dto/population-info.dto';
-import { CountryPopulationInfoDto } from './dto/country-population-info.dto';
-import { FlagsInfoDto } from './dto/flags-info.dto';
-import { CountryFlagInfoDto } from './dto/country-flag-info.dto';
-import { CountryInfoDto } from './dto/country-info.dto';
 import { AxiosError } from 'axios';
+import {
+  CountryBordersInfoDto,
+  CountryCodeDto,
+  CountryFlagInfoDto,
+  CountryInfoDto,
+  CountryPopulationInfoDto,
+  FlagsInfoDto,
+  PopulationCountDto,
+  PopulationInfoDto,
+} from './dto';
 
 @Injectable()
 export class CountryService {
