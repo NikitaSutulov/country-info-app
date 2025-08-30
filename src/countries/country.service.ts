@@ -79,7 +79,7 @@ export class CountryService {
     return countryPopulationInfo.populationCounts;
   }
 
-  private async getFlagUrl(countryName: string) {
+  private async getFlagUrl(countryName: string): Promise<string> {
     const flagsInfoUrl = this.COUNTRIES_NOW_API_BASE_URL.concat('/flag/images');
     const flagsInfoResponse = await this.httpService.axiosRef.get(flagsInfoUrl);
     const responseData: FlagsInfoDto = flagsInfoResponse.data;
