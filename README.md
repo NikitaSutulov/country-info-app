@@ -58,7 +58,7 @@ DB_HOST=localhost
 $ npm run start:dev
 ```
 
-Alternatively, if you have Docker and Docker Compose installed on your machine, after clonning the repository, you can skip the dependencies installation step, and instead, make Docker compose set up the nestjs app with the PostgreSQL DB in containers:
+Alternatively, if you have Docker and Docker Compose installed on your machine, after clonning the repository, you can skip the dependencies installation step, and instead, make Docker Compose set up the NestJS app with the PostgreSQL DB in containers:
 
 ```sh
 $ docker compose up -d
