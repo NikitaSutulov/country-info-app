@@ -1,6 +1,8 @@
 export class HolidayInfoDto {
-  date: string;
+  date: Date;
   localName: string;
   name: string;
   countryCode: string;
+  global: boolean;
+  fixed: boolean;
 }

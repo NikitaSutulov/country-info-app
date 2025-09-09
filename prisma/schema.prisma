@@ -1,0 +1,32 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DB_URL")
+}
+
+model User {
+  id       String  @id @default(uuid())
+  username String
+  password String
+  events   Event[]
+
+  @@map("users")
+}
+
+model Event {
+  id          String   @id @default(uuid())
+  date        DateTime @db.Date
+  localName   String   @map("local_name")
+  name        String
+  countryCode String   @map("country_code")
+  global      Boolean
+  fixed       Boolean
+  userId      String   @map("user_id")
+  user        User     @relation(fields: [userId], references: [id])
+
+  @@map("events")
+}

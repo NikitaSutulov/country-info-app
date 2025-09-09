@@ -3,45 +3,37 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import {
-  AddHolidaysDto,
-  AuthDto,
-  EventDto,
-  HolidayInfoDto,
-  TokenDto,
-} from './dto';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { AddHolidaysDto, AuthDto, HolidayInfoDto, TokenDto } from './dto';
 import { compare, hash } from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
 import { AxiosError } from 'axios';
-import { Event, User } from './entities';
+import { PrismaService } from '../prisma/prisma.service';
+import { Event } from '@prisma/client';
 
 @Injectable()
 export class UserService {
   constructor(
-    @InjectRepository(User)
-    private readonly usersRepo: Repository<User>,
-    @InjectRepository(Event)
-    private readonly eventsRepo: Repository<Event>,
+    private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly httpService: HttpService,
   ) {}
 
   async signup(authDto: AuthDto): Promise<string> {
-    await this.ensureUsernameAvailable(authDto.username);
-    const newUser = this.usersRepo.create(authDto);
-    newUser.password = await this.hashPassword(newUser.password);
-    await this.usersRepo.save(newUser);
+    const { username, password } = authDto;
+    await this.ensureUsernameAvailable(username);
+    const hashedPassword = await this.hashPassword(password);
+    await this.prisma.user.create({
+      data: { username, password: hashedPassword },
+    });
     return 'Signed up successfully';
   }
 
   async login(authDto: AuthDto): Promise<TokenDto> {
     const { username, password } = authDto;
-    const user = await this.usersRepo.findOneBy({ username });
+    const user = await this.prisma.user.findFirst({ where: { username } });
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -62,8 +54,8 @@ export class UserService {
   async addHolidays(
     userId: string,
     addHolidaysDto: AddHolidaysDto,
-  ): Promise<EventDto[]> {
-    const user = await this.usersRepo.findOneBy({ id: userId });
+  ): Promise<Event[]> {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -73,28 +65,32 @@ export class UserService {
       holidaysInfo,
       holidays,
     );
-    const newEvents = filteredHolidaysInfo.map((holidayInfo) =>
-      this.eventsRepo.create({
-        ...holidayInfo,
-        user,
-      }),
+    const newEvents = await Promise.all(
+      filteredHolidaysInfo.map((holidayInfo) =>
+        this.prisma.event.create({
+          data: {
+            ...holidayInfo,
+            userId,
+          },
+        }),
+      ),
     );
-    return (await this.eventsRepo.save(newEvents)).map(this.eventToDto);
+    return newEvents;
   }
 
-  async getHolidays(userId: string): Promise<EventDto[]> {
-    const user = await this.usersRepo.findOneBy({ id: userId });
+  async getHolidays(userId: string): Promise<Event[]> {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    return (
-      await this.eventsRepo.find({ where: { user }, relations: ['user'] })
-    ).map(this.eventToDto);
+    return await this.prisma.event.findMany({ where: { userId } });
   }
 
   private async ensureUsernameAvailable(username: string): Promise<void> {
-    const userWithTheSameUsername = await this.usersRepo.findOneBy({
-      username,
+    const userWithTheSameUsername = await this.prisma.user.findFirst({
+      where: {
+        username,
+      },
     });
     if (userWithTheSameUsername) {
       throw new BadRequestException(
@@ -118,7 +114,18 @@ export class UserService {
     );
     try {
       const holidaysResponse = await this.httpService.axiosRef.get(holidaysUrl);
-      const responseData: HolidayInfoDto[] = holidaysResponse.data;
+      const responseData: HolidayInfoDto[] = holidaysResponse.data.map(
+        (it: Omit<HolidayInfoDto, 'date'> & { date: string }) => {
+          return {
+            date: new Date(it.date),
+            localName: it.localName,
+            name: it.name,
+            countryCode: it.countryCode,
+            global: it.global,
+            fixed: it.fixed,
+          };
+        },
+      );
       return responseData;
     } catch (err) {
       if (err instanceof AxiosError && err.status === 404) {
@@ -136,18 +143,5 @@ export class UserService {
       return holidaysInfo;
     }
     return holidaysInfo.filter((holiday) => filters.includes(holiday.name));
-  }
-
-  private eventToDto(event: Event): EventDto {
-    return {
-      id: event.id,
-      date: event.date,
-      localName: event.localName,
-      name: event.name,
-      countryCode: event.countryCode,
-      global: event.global,
-      fixed: event.fixed,
-      userId: event.user.id,
-    };
   }
 }
